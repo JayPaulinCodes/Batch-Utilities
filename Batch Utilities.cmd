@@ -45,42 +45,110 @@ title Batch Utilies
 set wantsRestartNow=n
 set deviceNeedsRestart=false
 
-
-goto mainMenu
+call :mainMenu 1 1
 
 exit /b
 
-:mainMenu
+:mainMenu <1=current-row> <2=current-col>
+    setlocal
     title Batch Utilities
-
     cls
+
+    @rem Set Varriables
+    set /a minRows=1
+    set /a maxRows=5
+    set /a minCols=1
+    set /a maxCols=2
+    set /a currentRow=%1
+    set /a currentCol=%2
+
+    if %currentRow% gtr %maxRows% set /a currentRow=%maxRows%
+    if %currentRow% lss %minRows% set /a currentRow=%minRows%
+    if %currentCol% gtr %maxCols% set /a currentCol=%maxCols%
+    if %currentCol% lss %minCols% set /a currentCol=%minCols%
     
-    echo  +--------------------------------+
-    echo  ^|         BATCH UTILITES         ^|
-    echo  ^|          Version 1.0.0         ^|
-    echo  +--------------------------------+
+    set /a nextRow=%currentRow%
+    set /a nextCol=%currentCol%
+
+    set optionChar_about=[ ]
+    if %currentRow% equ 1 if %currentCol% equ 1 set optionChar_about=[X]
+
+    set optionChar_changelog=[ ]
+    if %currentRow% equ 1 if %currentCol% equ 2 set optionChar_changelog=[X]
+
+    set optionChar_deviceInfo=[ ]
+    if %currentRow% equ 2 if %currentCol% equ 1 set optionChar_deviceInfo=[X]
+
+    set optionChar_grantLocalAdmin=[ ]
+    if %currentRow% equ 2 if %currentCol% equ 2 set optionChar_grantLocalAdmin=[X]
+
+    set optionChar_openAppsInFolder=[ ]
+    if %currentRow% equ 3 if %currentCol% equ 1 set optionChar_openAppsInFolder=[X]
+
+    set optionChar_revealWiFiPasswords=[ ]
+    if %currentRow% equ 3 if %currentCol% equ 2 set optionChar_revealWiFiPasswords=[X]
+
+    set optionChar_getWindowsActivationKey=[ ]
+    if %currentRow% equ 4 if %currentCol% equ 1 set optionChar_getWindowsActivationKey=[X]
+
+    set optionChar_fixUnquotedServicePaths=[ ]
+    if %currentRow% equ 4 if %currentCol% equ 2 set optionChar_fixUnquotedServicePaths=[X]
+
+    set optionChar_getBitLockerKey=[ ]
+    if %currentRow% equ 5 if %currentCol% equ 1 set optionChar_getBitLockerKey=[X]
+
+    set optionChar_exit=[ ]
+    if %currentRow% equ 5 if %currentCol% equ 2 set optionChar_exit=[X]
+   
+    @REM echo %currentRow% %currentCol%
+    echo    +--------------------------------------------------------------+
+    echo    ^|                        BATCH UTILITES                        ^|
+    echo    ^|                         Version 1.1.0                        ^|
+    echo    +--------------------------------------------------------------+
+    echo            Use the arrow keys on the keyboard to navigate.
+    echo                Use the enter key to make a selection.
+    echo               Use the escape key to close the utility.
     echo:
-    echo  Please select one of the options bellow:
-    echo  0.  Exit
-    echo  1.  About
-    echo  2.  Changelog
-    echo  3.  Device information
-    echo  4.  Grant local admin permissions
-    echo  5.  Open applications in folder
-    echo  6.  Reveal all saved Wi-Fi passwords
+    echo          %optionChar_about% About                        %optionChar_changelog% Changelog
+    echo          %optionChar_deviceInfo% Device Information           %optionChar_grantLocalAdmin% Grant Local Admin Permissions 
+    echo          %optionChar_openAppsInFolder% Open Applications In Folder  %optionChar_revealWiFiPasswords% Reveal All Saved Wi-Fi Passwords
+    echo          %optionChar_getWindowsActivationKey% Get Windows Activation Key   %optionChar_fixUnquotedServicePaths% Quote Unquoted Service Paths                         
+    echo          %optionChar_getBitLockerKey% Get BitLocker Key            %optionChar_exit% Exit                         
     echo:
 
-    set /p optionSelection=Please enter the number for the option you wish to select: 
+    for /F %%k in ('PowerShell Write-Host $Host.UI.RawUI.ReadKey(\"NoEcho,IncludeKeyDown\"^).VirtualKeyCode') do set "key=%%k"
 
-    if %optionSelection% equ 0 goto exitUtility
-    if %optionSelection% equ 1 goto about
-    if %optionSelection% equ 2 goto changelog
-    if %optionSelection% equ 3 goto deviceInfo
-    if %optionSelection% equ 4 goto grantLocalAdminPermissions
-    if %optionSelection% equ 5 goto openAppsInFolder
-    if %optionSelection% equ 6 goto revealWiFiPasswords
+    @rem Enter key
+    if %key% equ 13 if %currentRow% equ 1 if %currentCol% equ 1 endlocal & goto about
+    if %key% equ 13 if %currentRow% equ 1 if %currentCol% equ 2 endlocal & goto changelog
+    if %key% equ 13 if %currentRow% equ 2 if %currentCol% equ 1 endlocal & goto deviceInfo
+    if %key% equ 13 if %currentRow% equ 2 if %currentCol% equ 2 endlocal & goto grantLocalAdminPermissions
+    if %key% equ 13 if %currentRow% equ 3 if %currentCol% equ 1 endlocal & goto openAppsInFolder
+    if %key% equ 13 if %currentRow% equ 3 if %currentCol% equ 2 endlocal & goto revealWiFiPasswords
+    if %key% equ 13 if %currentRow% equ 4 if %currentCol% equ 1 endlocal & goto getWindowsActivationKey
+    if %key% equ 13 if %currentRow% equ 4 if %currentCol% equ 2 endlocal & goto quoteUnquotedServicePaths
+    if %key% equ 13 if %currentRow% equ 5 if %currentCol% equ 1 endlocal & goto getBitLockerKey
+    if %key% equ 13 if %currentRow% equ 5 if %currentCol% equ 2 endlocal & goto exitUtility
 
-    goto exitUtility
+    @rem Escape key
+    if %key% equ 27 goto exitUtility
+
+    @rem Left key
+    if %key% equ 37 set /a nextCol=%currentCol% - 1
+
+    @rem Up key
+    if %key% equ 38 set /a nextRow=%currentRow% - 1
+    
+    @rem Right key
+    if %key% equ 39 set /a nextCol=%currentCol% + 1
+    
+    @rem Down key
+    if %key% equ 40 set /a nextRow=%currentRow% + 1
+
+    @REM echo %nextRow% %nextCol%
+    @REM pause
+    call :mainMenu %nextRow% %nextCol%
+    exit /b
 
 
 @REM 
@@ -93,19 +161,29 @@ exit /b
 
     echo About Batch Utilities
     echo:
-    echo Version: 1.0.0
+    echo Version: 1.1.0
     echo Author: Jacob Paulin
     echo GitHub: TBD
     echo:
 
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 1 1
     
 
 :changelog
     title Batch Utilities - Changelog
     cls
+
+    echo [------------------------------]
+    echo Version 1.1.0
+    echo Released 2022-11-16
+    echo:
+    echo Updated the main menu to be interactive.
+    echo Added a feature to find the BitLocker recovery key.
+    echo Added a feature to find the Windows activation key.
+    echo Added a feature to quote all unquoted service paths.
+    echo:
 
     echo [------------------------------]
     echo Version 1.0.0
@@ -117,7 +195,7 @@ exit /b
     echo:
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 1 2
 
 
 :deviceInfo
@@ -380,7 +458,7 @@ exit /b
 
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 2 1
 
 
 :grantLocalAdminPermissions
@@ -400,7 +478,7 @@ exit /b
 
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 2 2
 
 
 :openAppsInFolder
@@ -443,7 +521,7 @@ exit /b
 
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 3 1
 
 
 :revealWiFiPasswords
@@ -473,7 +551,89 @@ exit /b
     echo:
     echo [Press any key to return to the main menu]
     pause >nul
-    goto mainMenu
+    call :mainMenu 3 2
+
+
+:getBitLockerKey
+    title Batch Utilities - Get BitLocker Key
+    cls
+    
+    set tempFile=%TEMP%\BitLockerKey.txt
+
+    if exist %tempFile% del %tempFile%
+
+    PowerShell -command "Get-BitLockerVolume -MountPoint C:| Select-Object -ExpandProperty KeyProtector | Where-Object KeyProtectorType -eq RecoveryPassword | Select-Object KeyProtectorID, RecoveryPassword | Format-List" > %tempFile%
+
+    for /f "usebackq skip=1 tokens=2 delims=: " %%i in (%tempFile%) do set key=%%i
+
+    echo:
+    echo Your BitLocker Key Is: %key%
+    echo:
+
+    set /p doCopy="Would you like copy the key to your clipboard? (y/n) "
+
+    if %doCopy%==y (
+        echo | set /p=%key%| clip
+        echo Key successfully copied!
+    )
+
+    if exist %tempFile% del %tempFile%
+
+    echo:
+    echo [Press any key to close this window]
+    pause >nul
+    call :mainMenu 5 1
+
+
+:getWindowsActivationKey
+    title Batch Utilities - Get Windows Activation Key
+    cls
+    
+    for /f "tokens=2 delims==" %%i in ('"wmic path softwarelicensingservice get oa3xoriginalproductkey /format:list"') do set key=%%i
+
+    echo:
+    echo Your Windows Licensing Key Is: %key%
+    echo:
+
+    set /p doCopy="Would you like copy the key to your clipboard? (y/n) "
+
+    if %doCopy%==y (
+        echo | set /p=%key%| clip
+        echo Key successfully copied!
+        echo:
+    )
+
+    echo:
+    echo [Press any key to close this window]
+    pause >nul
+    call :mainMenu 4 1
+
+
+:quoteUnquotedServicePaths
+    title Batch Utilities - Quote Unquoted Service Paths
+    cls
+    
+    set tempFile=%TEMP%\UnquottedPaths.txt
+
+    if exist %tempFile% del %tempFile%
+
+    wmic service get name,pathname,startmode,displayname /format:csv | findstr /i auto | findstr /i /v "C:\Windows\\" | findstr /i /v ^""" > %tempFile%
+
+    for /f "tokens=2,4 delims=," %%a in (%tempFile%) do (
+        reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%%a" /v ImagePath /t REG_EXPAND_SZ /d "\"%%b"\" /f >NUL 2>&1
+        echo Fixed path for service %%a,
+        echo quoted the following path: %%b
+        echo:
+    )
+
+    if exist %tempFile% del %tempFile%
+
+    echo Successfully fixed unquotted paths!
+
+    echo:
+    echo [Press any key to close this window]
+    pause >nul
+    call :mainMenu 4 2
 
 
 @REM 
